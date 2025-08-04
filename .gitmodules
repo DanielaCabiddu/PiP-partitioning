@@ -1,0 +1,12 @@
+[submodule "external/cinolib"]
+	path = external/cinolib
+	url = https://github.com/mlivesu/cinolib.git
+[submodule "external/gdal"]
+	path = external/gdal
+	url = https://github.com/OSGeo/gdal.git
+[submodule "external/proj"]
+	path = external/proj
+	url = https://github.com/OSGeo/PROJ.git
+[submodule "external/tclap"]
+	path = external/tclap
+	url = https://github.com/mirror/tclap.git
