@@ -54,10 +54,16 @@ include_directories(${tclap_DIR}/include)
 
 #########################################################
 
+## LIBLAS
+include_directories(${libLAS_INCLUDE_DIR})
+
+message(STATUS "Using LIBLAS: ${libLAS_INCLUDE_DIR}")
+#########################################################
+
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${GDAL_LIB})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${GDAL_LIB} ${libLAS_LIBRARY} cinolib)
 
 if (MSVC)
     file (GLOB MY_PROJ_DLLs ${PROJ_INSTALL}/bin/*.dll    )

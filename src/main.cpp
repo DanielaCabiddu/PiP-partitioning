@@ -27,6 +27,7 @@
 #endif
 
 #include <tclap/CmdLine.h>
+#include <liblas/liblas.hpp>
 
 #include <filesystem>
 
@@ -36,6 +37,7 @@ int main(int argc, char *argv[])
 {
     std::string external_boundary_path   ;
     std::string internal_boundaries_path ;
+    std::string las_path  = ""; // Not used in this example, but kept for consistency
 
     std::string output_path;
 
@@ -50,6 +52,8 @@ int main(int argc, char *argv[])
         TCLAP::ValueArg<std::string> external_arg("e", "external", "External Boundary", true, "name_ground", "string", cmd);
         TCLAP::ValueArg<std::string> internal_arg("i", "internal", "Internal Boundaries file", true, "name_pav", "string", cmd);
 
+        TCLAP::ValueArg<std::string> pc_arg("l", "las", "Point Cloud (LAS)", false, "name_pav", "string", cmd);
+
         TCLAP::ValueArg<std::string> o_arg("o", "output", "Output File ", true, "name_out", "string", cmd);
 
         // Parse the argv array
@@ -57,6 +61,9 @@ int main(int argc, char *argv[])
 
         external_boundary_path = external_arg.getValue();
         internal_boundaries_path = internal_arg.getValue();
+
+        if (pc_arg.isSet())
+            las_path = pc_arg.getValue();
 
         output_path = o_arg.getValue();
 
@@ -209,42 +216,107 @@ int main(int argc, char *argv[])
     GISData shapefile (dual_m, boundary_epsg);
     URBAN3D::write_GIS(output_path, shapefile);
 
-
-
 #ifdef USE_CINOLIB_GUI
 
-        cinolib::DrawableTrimesh<> ground_tri_DM(ground_tri.vector_verts(), ground_tri.vector_polys());
-        // ground_tri_DM.translate(-c);
-        ground_tri_DM.edge_mark_boundaries();
-        ground_tri_DM.updateGL();
-        ground_tri_DM.show_marked_edge_width(7.5);
+    cinolib::DrawableTrimesh<> ground_tri_DM(ground_tri.vector_verts(), ground_tri.vector_polys());
+    // ground_tri_DM.translate(-c);
+    ground_tri_DM.edge_mark_boundaries();
+    ground_tri_DM.updateGL();
+    ground_tri_DM.show_marked_edge_width(7.5);
 
+    cinolib::GLcanvas gui(1000, 1000);
+    gui.push(&ground_tri_DM);
+    gui.push(&dual_m);
+    // gui.push(&dual_tri);
 
-        cinolib::GLcanvas gui(1000, 1000);
-        gui.push(&ground_tri_DM);
-        gui.push(&dual_m);
-        // gui.push(&dual_tri);
+    for (uint vid=0; vid < dual_m.num_verts(); vid++)
+        gui.push_marker(cinolib::vec3d(dual_m.vert(vid)));
 
-        for (uint vid=0; vid < dual_m.num_verts(); vid++)
-            gui.push_marker(cinolib::vec3d(dual_m.vert(vid)));
+    cinolib::DrawableSegmentSoup ss;
 
-        cinolib::DrawableSegmentSoup ss;
+    for (uint eid=0; eid < dual_m.num_edges(); eid++)
+        ss.push_seg(dual_m.edge_vert(eid,0), dual_m.edge_vert(eid,1));
 
-        for (uint eid=0; eid < dual_m.num_edges(); eid++)
-            ss.push_seg(dual_m.edge_vert(eid,0), dual_m.edge_vert(eid,1));
+    ss.default_color = cinolib::Color::BLUE();
+    ss.use_gl_lines = true;
+    ss.thickness = 5.;
 
-        ss.default_color = cinolib::Color::BLUE();
-        ss.use_gl_lines = true;
-        ss.thickness = 5.;
+    gui.push(&ss);
 
-        gui.push(&ss);
-
-        cinolib::SurfaceMeshControls<cinolib::DrawableTrimesh<>> menu(&ground_tri_DM, &gui, "Ground");
-        gui.push(&menu);
-        return gui.launch();
-
+    cinolib::SurfaceMeshControls<cinolib::DrawableTrimesh<>> menu(&ground_tri_DM, &gui, "Ground");
+    gui.push(&menu);
+    return gui.launch();
 
 #endif
+
+/////////////////////////////////////////
+///
+///
+    if (las_path.length() > 0)
+    {
+        std::ifstream ifs;
+        ifs.open(las_path.c_str(), std::ios::in | std::ios::binary);
+
+        if (!ifs.is_open())
+        {
+
+            liblas::Reader reader(ifs);
+            liblas::Header const& header = reader.GetHeader();
+
+            int nPoints = header.GetPointRecordsCount();
+
+            // Store the points and the point-to-region mapping
+            std::vector<liblas::Point> Points;
+            std::vector<std::vector<liblas::Point>> region2point;
+            Points.reserve(nPoints);
+
+            while (reader.ReadNextPoint())
+            {
+                const liblas::Point& p = reader.GetPoint();
+                Points.push_back(p);
+            }
+
+            for (int j = 0; j < nPoints; j++)
+            {
+                if (!point_in_polygon(external_boundary, cinolib::vec3d(Points.at(j).GetX(), Points.at(j).GetY(),Points.at(j).GetZ()), 0))
+                    continue;
+
+                for (uint pid=0; pid < shapefile.get_polygons().size(); pid++)
+                {
+                    if (point_in_polygon(shapefile.convert_to_polygon_mesh(), cinolib::vec3d(Points.at(j).GetX(), Points.at(j).GetY(),Points.at(j).GetZ()), pid))
+                    {
+                        region2point.at(j).push_back(Points.at(j));
+                        break;
+                    }
+                }
+            }
+
+            ///
+            for (uint pid=0; pid < shapefile.get_polygons().size(); pid++)
+            {
+                std::ofstream outFile;
+
+                std::string outName = output_path + "_" + std::to_string(pid) + ".las";
+
+                outFile.open(outName, std::ios::out | std::ios::binary);
+                liblas::Writer *writer = nullptr;
+
+                liblas::Header h = header;
+                h.SetPointRecordsCount(region2point.at(pid).size());
+                writer = new liblas::Writer(outFile, h);
+
+                for (uint i=0; i < region2point.at(pid).size(); i++)
+                {
+                    writer->WritePoint(region2point.at(pid).at(i));
+                }
+
+                outFile.close();
+            }
+
+            ifs.close();
+        }
+    }
+
 
     return 0;
 }
