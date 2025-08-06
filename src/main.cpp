@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
     cinolib::GLcanvas gui(1000, 1000);
     gui.push(&ground_tri_DM);
     gui.push(&dual_m);
-    // gui.push(&dual_tri);
+    gui.push(&dual_tri);
 
     for (uint vid=0; vid < dual_m.num_verts(); vid++)
         gui.push_marker(cinolib::vec3d(dual_m.vert(vid)));
@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
 
     cinolib::SurfaceMeshControls<cinolib::DrawableTrimesh<>> menu(&ground_tri_DM, &gui, "Ground");
     gui.push(&menu);
-    return gui.launch();
+    gui.launch();
 
 #endif
 
@@ -254,66 +254,138 @@ int main(int argc, char *argv[])
 ///
     if (las_path.length() > 0)
     {
+        // Check if the LAS file exists
         std::ifstream ifs;
         ifs.open(las_path.c_str(), std::ios::in | std::ios::binary);
 
-        if (!ifs.is_open())
+        if (ifs.is_open())
         {
-
+            std::cout << "Processing LAS file: " << las_path << std::endl;
             liblas::Reader reader(ifs);
             liblas::Header const& header = reader.GetHeader();
 
             int nPoints = header.GetPointRecordsCount();
 
+            std::cout << "Number of points in the LAS file: " << nPoints << std::endl;
+
             // Store the points and the point-to-region mapping
             std::vector<liblas::Point> Points;
-            std::vector<std::vector<liblas::Point>> region2point;
+            std::vector<uint> point2region (nPoints, UINT_MAX);
+
+            std::vector<std::vector<uint>> region2point (shapefile.get_polygons().size(), std::vector<uint>());
             Points.reserve(nPoints);
 
             while (reader.ReadNextPoint())
             {
-                const liblas::Point& p = reader.GetPoint();
+                liblas::Point p = reader.GetPoint();  // safer than using a const ref
                 Points.push_back(p);
+            }
+
+            cinolib::Polygonmesh<> shp_mesh = shapefile.convert_to_polygon_mesh();
+
+            std::atomic<int> lastPercentagePrinted{0};
+
+
+            #pragma omp parallel for ordered schedule(static,1)
+            for (int j = 0; j < nPoints; j++)
+            {
+                // if (!point_in_polygon(external_boundary, cinolib::vec3d(Points.at(j).GetX(), Points.at(j).GetY(),Points.at(j).GetZ()), 0))
+                //     continue;
+                // reader.ReadNextPoint();
+                // const liblas::Point p = reader.GetPoint();
+                // Points.push_back(p);
+
+                // std::cout << "Processing point " << j << " with coordinates: "
+                //           << Points.at(j).GetX() << ", "
+                //           << Points.at(j).GetY() << ", "
+                //           << Points.at(j).GetZ() << std::endl;
+
+
+
+                for (uint pid=0; pid < shp_mesh.num_polys(); pid++)
+                {
+                    if (point_in_polygon(shp_mesh, cinolib::vec3d(Points.at(j).GetX(), Points.at(j).GetY(),Points.at(j).GetZ()), pid))
+                    {
+                        // region2point.at(pid).push_back(j);
+                        point2region.at(j) = pid;
+                        // std::cout << "Point " << j << " belongs to region " << pid << std::endl;
+                        break;
+                    }
+                }
+
+                int currentPercentage = static_cast<int>((100.0 * j) / nPoints);
+
+                // Only one thread at a time checks & updates this
+                if (j==0 || currentPercentage > lastPercentagePrinted+4) // Update every 5%)
+                {
+                    // atomic compare-and-swap: only one thread will succeed
+                    int expected = lastPercentagePrinted;
+                    if (lastPercentagePrinted.compare_exchange_strong(expected, currentPercentage))
+                    {
+                        #pragma omp ordered
+                        {
+                            std::stringstream ss;
+                            ss << "Processed " << j << " points / " << nPoints
+                               << " total points (" << currentPercentage << "%)";
+
+                            if (currentPercentage == 100)
+                                ss << " - done!";
+                            else
+                                ss << "...";
+
+                            std::cout << ss.str() << std::endl;
+                        }
+                    }
+                }
             }
 
             for (int j = 0; j < nPoints; j++)
             {
-                if (!point_in_polygon(external_boundary, cinolib::vec3d(Points.at(j).GetX(), Points.at(j).GetY(),Points.at(j).GetZ()), 0))
-                    continue;
-
-                for (uint pid=0; pid < shapefile.get_polygons().size(); pid++)
-                {
-                    if (point_in_polygon(shapefile.convert_to_polygon_mesh(), cinolib::vec3d(Points.at(j).GetX(), Points.at(j).GetY(),Points.at(j).GetZ()), pid))
-                    {
-                        region2point.at(j).push_back(Points.at(j));
-                        break;
-                    }
-                }
+                if (point2region.at(j) < UINT_MAX)
+                    region2point.at(point2region.at(j)).push_back(j);
             }
 
             ///
             for (uint pid=0; pid < shapefile.get_polygons().size(); pid++)
             {
+                if (region2point.at(pid).size() == 0)
+                {
+                    std::cout << "Region " << pid << " has no points." << std::endl;
+                    continue;
+                }
+
                 std::ofstream outFile;
 
                 std::string outName = output_path + "_" + std::to_string(pid) + ".las";
 
+                std::cout << "Writing LAS file: " << outName << std::endl;
+
                 outFile.open(outName, std::ios::out | std::ios::binary);
-                liblas::Writer *writer = nullptr;
+                if (!outFile.is_open())
+                {
+                    std::cerr << "Error opening output LAS file: " << outName << std::endl;
+                    continue;
+                    // exit(1);
+                }
 
                 liblas::Header h = header;
                 h.SetPointRecordsCount(region2point.at(pid).size());
-                writer = new liblas::Writer(outFile, h);
+                liblas::Writer *writer = new liblas::Writer(outFile, h);
 
                 for (uint i=0; i < region2point.at(pid).size(); i++)
                 {
-                    writer->WritePoint(region2point.at(pid).at(i));
+                    writer->WritePoint(Points.at(region2point.at(pid).at(i)));
                 }
 
                 outFile.close();
             }
 
             ifs.close();
+        }
+        else
+        {
+            std::cerr << "Error opening LAS file: " << las_path << std::endl;
+            exit(1);
         }
     }
 

@@ -47,19 +47,43 @@ cinolib::Trimesh<> triangulate_with_holes(const cinolib::Polygonmesh<> &m, const
 
 
 inline
-bool point_in_polygon(const cinolib::Polygonmesh<> &m, const cinolib::vec3d p, const uint pid) {
-    bool inside = false;
-    std::vector<std::vector<uint>> tris = cinolib::polys_from_serialized_vids(m.poly_tessellation(pid), 3);
-    for(std::vector<uint> t : tris) {
-        cinolib::vec3d t0 = m.vert(t[0]);
-        cinolib::vec3d t1 = m.vert(t[1]);
-        cinolib::vec3d t2 = m.vert(t[2]);
-        if (point_in_triangle_3d(p, t0, t1, t2)) {
-            inside = true;
-            break;
-        }
+bool point_in_polygon(const cinolib::Polygonmesh<> &m, const cinolib::vec3d p, const uint pid)
+{
+    int i, j, c = 0;
+
+    int nvert = m.poly_verts(pid).size();
+
+    double minx = DBL_MAX;
+    double miny = DBL_MAX;
+    double maxx = -DBL_MAX;
+    double maxy = -DBL_MAX;
+
+    for (unsigned int vid : m.poly_verts_id(pid))
+    {
+        cinolib::vec3d v = m.vert(vid);
+        if (v.x() < minx) minx = v.x();
+        if (v.y() < miny) miny = v.y();
+        if (v.x() > maxx) maxx = v.x();
+        if (v.y() > maxy) maxy = v.y();
     }
-    return inside;
+
+    for (i = 0, j = nvert - 1; i < nvert; j = i++) {
+
+        bool bbout = false;
+
+        // Check if the point is outside the bounding box of the polygon
+        if (p.x() < minx || p.y() < miny ||
+            p.x() > maxx || p.y() > maxy )
+            bbout = true;
+
+        // Check if the point is inside the polygon using the ray-casting algorithm
+        if (!bbout && ((m.poly_vert(pid,i).y() > p.y()) != (m.poly_vert(pid,j).y() > p.y())) &&
+            (p.x() < (m.poly_vert(pid,j).x() - m.poly_vert(pid,i).x()) * (p.y() - m.poly_vert(pid,i).y()) / (m.poly_vert(pid,j).y() - m.poly_vert(pid,i).y()) + m.poly_vert(pid,i).x()))
+            c = !c;
+    }
+
+    return c;//!(c == 0);
+
 }
 
 #endif // CITY_AUXILIARY
