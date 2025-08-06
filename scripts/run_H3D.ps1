@@ -23,7 +23,8 @@ if (-not (Test-Path $outputDir)) {
 # Download only if file doesn't already exist
 if (-not (Test-Path $downloadPath)) {
     Write-Host "File not found. Downloading from OneDrive..."
-    Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
+    #Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
+    Start-BitsTransfer -Source $downloadUrl -Destination $downloadPath
     Write-Host "Download complete: $downloadPath"
 } else {
     Write-Host "File already exists: $downloadPath (skipping download)"
