@@ -245,6 +245,13 @@ int main(int argc, char *argv[])
 
     cinolib::SurfaceMeshControls<cinolib::DrawableTrimesh<>> menu(&ground_tri_DM, &gui, "Ground");
     gui.push(&menu);
+
+    if (las_path.length() == 0)
+    {
+        cinolib::SurfaceMeshControls<cinolib::DrawablePolygonmesh<>> menu2(&dual_m, &gui, "Dual Mesh");
+        return gui.launch();
+    }
+
     gui.launch();
 
 #endif
