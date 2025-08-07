@@ -1,5 +1,6 @@
 param (
     [string]$exePath
+    [string]$outputLASPath
 )
 
 # Get script directory
@@ -11,6 +12,12 @@ $downloadUrl = "https://cnrsc-my.sharepoint.com/:u:/g/personal/daniela_cabiddu_c
 if (-not $exePath) {
     # Default path if not passed in
     $exePath = Join-Path $scriptDir "..\bin\PBF-FR-partitioning.exe"
+}
+
+if (-not $outputLASPath)
+{
+    # Default path if not passed in
+    $outputLASPath = Join-Path $scriptDir "..\data\H3D\output_LAS\"
 }
 
 $downloadPath = Join-Path $scriptDir "..\data\H3D\H3D.las"
