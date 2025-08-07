@@ -18,9 +18,10 @@ $downloadPath = Join-Path $scriptDir "..\data\H3D\H3D.las"
 $ext_boundary = Join-Path $scriptDir "..\data\H3D\hess_boundary_25832.shp"
 $int_boundary = Join-Path $scriptDir "..\data\H3D\hess_25832.shp"
 
-$outputPath = Join-Path $scriptDir "..\data\H3D\output\H3D_partitioning.shp"
+$outputPath = Join-Path $scriptDir "..\data\H3D\output\"
+$outputFile = "H3D_partitioning.shp"
 
-$args       = "-l `"$downloadPath`" -i `"$int_boundary`" -e `"$ext_boundary`" -o `"$outputPath`" "
+$args       = "-l `"$downloadPath`" -i `"$int_boundary`" -e `"$ext_boundary`" -O `"$outputPath`" -o `"$outputFile`" "
 
 # Ensure output directory exists
 $outputDir = Split-Path $outputPath
