@@ -39,7 +39,7 @@ cmake --build . --config Release
 Binaries will be available in the **${ROOT}/bin** folder
 
 ## Author & Copyright
-Daniela Cabiddu
+Daniela Cabiddu (CNR-IMATI). Contact Email: daniela.cabiddu@cnr.it
 
 ## Citing us
 ```bibtex
