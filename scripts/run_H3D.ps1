@@ -1,5 +1,5 @@
 param (
-    [string]$exePath
+    [string]$exePath,
     [string]$outputLASPath
 )
 
@@ -28,7 +28,13 @@ $int_boundary = Join-Path $scriptDir "..\data\H3D\hess_25832.shp"
 $outputLASPath = Join-Path $scriptDir "..\data\H3D\output_LAS\"
 $outputSHPFile = Join-Path $scriptDir "..\data\H3D\output_SHP\H3D_partitioning.shp"
 
-$args       = "-l `"$downloadPath`" -i `"$int_boundary`" -e `"$ext_boundary`" -L `"$outputLASPath`" -O `"$outputSHPFile`" "
+$args = @(
+    "-l", "$downloadPath",
+    "-i", "$int_boundary",
+    "-e", "$ext_boundary",
+    "-L", "$outputLASPath",
+    "-O", "$outputSHPFile"
+)
 
 # Ensure output directory exists
 $outputDir = Split-Path $outputSHPFile
@@ -48,6 +54,6 @@ if (-not (Test-Path $downloadPath)) {
 
 # Run the executable
 Write-Host "Running executable: $exePath $args"
-Start-Process -FilePath $exePath -ArgumentList $args -Wait
+& $exePath @args
 
 Write-Host "Done."
