@@ -18,13 +18,13 @@ $downloadPath = Join-Path $scriptDir "..\data\H3D\H3D.las"
 $ext_boundary = Join-Path $scriptDir "..\data\H3D\hess_boundary_25832.shp"
 $int_boundary = Join-Path $scriptDir "..\data\H3D\hess_25832.shp"
 
-$outputPath = Join-Path $scriptDir "..\data\H3D\output\"
-$outputFile = "H3D_partitioning.shp"
+$outputLASPath = Join-Path $scriptDir "..\data\H3D\output_LAS\"
+$outputSHPFile = Join-Path $scriptDir "..\data\H3D\output_SHP\H3D_partitioning.shp"
 
-$args       = "-l `"$downloadPath`" -i `"$int_boundary`" -e `"$ext_boundary`" -O `"$outputPath`" -o `"$outputFile`" "
+$args       = "-l `"$downloadPath`" -i `"$int_boundary`" -e `"$ext_boundary`" -L `"$outputLASPath`" -O `"$outputSHPFile`" "
 
 # Ensure output directory exists
-$outputDir = Split-Path $outputPath
+$outputDir = Split-Path $outputSHPFile
 if (-not (Test-Path $outputDir)) {
     New-Item -ItemType Directory -Path $outputDir -Force
 }

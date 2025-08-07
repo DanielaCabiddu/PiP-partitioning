@@ -39,8 +39,8 @@ int main(int argc, char *argv[])
     std::string internal_boundaries_path ;
     std::string las_path  = ""; // Not used in this example, but kept for consistency
 
-    std::string output_path;
-    std::string output_file;
+    std::string output_las_folder;
+    std::string output_shp_file;
 
     uint boundary_epsg;
 
@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
         TCLAP::ValueArg<std::string> internal_arg("i", "internal", "Internal Boundaries file", true, "name_pav", "string", cmd);
 
         TCLAP::ValueArg<std::string> pc_arg("l", "las", "Point Cloud (LAS)", false, "name_pav", "string", cmd);
+        TCLAP::ValueArg<std::string> o_pc_arg("L", "output-las-folder", "OutputLAS folder", false, "name_pav", "string", cmd);
 
-        TCLAP::ValueArg<std::string> o_arg("o", "output-file", "Output Filename ", true, "name_out", "string", cmd);
-        TCLAP::ValueArg<std::string> O_arg("O", "output-folder", "Output File Folder ", true, "name_out", "string", cmd);
+        TCLAP::ValueArg<std::string> o_shp_arg("O", "output-shp", "Output Shp", true, "name_out", "string", cmd);
 
         // Parse the argv array
         cmd.parse(argc, argv);
@@ -67,8 +67,10 @@ int main(int argc, char *argv[])
         if (pc_arg.isSet())
             las_path = pc_arg.getValue();
 
-        output_path = O_arg.getValue();
-        output_file = output_path + "/" + o_arg.getValue();
+        if (o_pc_arg.isSet())
+            output_las_folder = o_pc_arg.getValue();
+
+        output_shp_file = o_shp_arg.getValue();
 
     }
     catch (TCLAP::ArgException &e) // catch exceptions
@@ -217,7 +219,7 @@ int main(int argc, char *argv[])
     dual_tri.updateGL();
 
     GISData shapefile (dual_m, boundary_epsg);
-    URBAN3D::write_GIS(output_path, shapefile);
+    URBAN3D::write_GIS(output_shp_file, shapefile);
 
 #ifdef USE_CINOLIB_GUI
 
@@ -366,12 +368,13 @@ int main(int argc, char *argv[])
 
                 std::ofstream outFile;
 
-                std::string outName = output_path + "/" + std::to_string(pid) + "/" + std::to_string(pid) + ".las";
+                std::string outFolder = output_las_folder + "/" + std::to_string(pid);
+                std::string outName = outFolder + "/" + std::to_string(pid) + ".las";
 
                 // create output directory if it does not exist
-                if (!fs::exists(output_path + "/" + std::to_string(pid)))
+                if (!fs::exists(outFolder))
                 {
-                    fs::create_directories(output_path + "/" + std::to_string(pid));
+                    fs::create_directories(outFolder);
                 }
 
                 std::cout << "Writing LAS file: " << outName << std::endl;
