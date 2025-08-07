@@ -7,8 +7,7 @@ This repository icludes the partitioning approach presented and described in the
 ![Representative Image](images/representative-image.png)
 
 ## Clone
-We provide the commands to install EWoPe. 
-The repository includes a submodule necessary to make the code work. Please, clone it recursively:
+The repository includes the submodules necessary to make the code work. Please, clone it recursively:
 
 - Clone recursively the repository into your local machine:
 ```
