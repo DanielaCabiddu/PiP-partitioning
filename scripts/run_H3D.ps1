@@ -20,7 +20,7 @@ $int_boundary = Join-Path $scriptDir "..\data\H3D\hess_25832.shp"
 
 $outputPath = Join-Path $scriptDir "..\data\H3D\output\H3D_partitioning.shp"
 
-$args       = "-l `"$outputPath`" -i `"$int_boundary`" -e `"$ext_boundary`" -o `"$outputPath`" "
+$args       = "-l `"$downloadPath`" -i `"$int_boundary`" -e `"$ext_boundary`" -o `"$outputPath`" "
 
 # Ensure output directory exists
 $outputDir = Split-Path $outputPath
