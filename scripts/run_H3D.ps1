@@ -25,7 +25,6 @@ $downloadPath = Join-Path $scriptDir "..\data\H3D\H3D.las"
 $ext_boundary = Join-Path $scriptDir "..\data\H3D\hess_boundary_25832.shp"
 $int_boundary = Join-Path $scriptDir "..\data\H3D\hess_25832.shp"
 
-$outputLASPath = Join-Path $scriptDir "..\data\H3D\output_LAS\"
 $outputSHPFile = Join-Path $scriptDir "..\data\H3D\output_SHP\H3D_partitioning.shp"
 
 $args = @(
