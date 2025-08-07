@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     std::string las_path  = ""; // Not used in this example, but kept for consistency
 
     std::string output_path;
+    std::string output_file;
 
     uint boundary_epsg;
 
@@ -54,7 +55,8 @@ int main(int argc, char *argv[])
 
         TCLAP::ValueArg<std::string> pc_arg("l", "las", "Point Cloud (LAS)", false, "name_pav", "string", cmd);
 
-        TCLAP::ValueArg<std::string> o_arg("o", "output", "Output File ", true, "name_out", "string", cmd);
+        TCLAP::ValueArg<std::string> o_arg("o", "output-file", "Output Filename ", true, "name_out", "string", cmd);
+        TCLAP::ValueArg<std::string> O_arg("O", "output-folder", "Output File Folder ", true, "name_out", "string", cmd);
 
         // Parse the argv array
         cmd.parse(argc, argv);
@@ -65,7 +67,8 @@ int main(int argc, char *argv[])
         if (pc_arg.isSet())
             las_path = pc_arg.getValue();
 
-        output_path = o_arg.getValue();
+        output_path = O_arg.getValue();
+        output_file = output_path + "/" + o_arg.getValue();
 
     }
     catch (TCLAP::ArgException &e) // catch exceptions
@@ -363,7 +366,13 @@ int main(int argc, char *argv[])
 
                 std::ofstream outFile;
 
-                std::string outName = output_path + "_" + std::to_string(pid) + ".las";
+                std::string outName = output_path + "/" + std::to_string(pid) + "/" + std::to_string(pid) + ".las";
+
+                // create output directory if it does not exist
+                if (!fs::exists(output_path + "/" + std::to_string(pid)))
+                {
+                    fs::create_directories(output_path + "/" + std::to_string(pid));
+                }
 
                 std::cout << "Writing LAS file: " << outName << std::endl;
 
