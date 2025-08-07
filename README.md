@@ -15,6 +15,8 @@ The repository includes a submodule necessary to make the code work. Please, clo
 git clone --recursive https://github.com/DanielaCabiddu/PBF-FR-partitioning.git
 ```
 
+In the following, assume the **${ROOT}** folder to be the one whee this *README* lies.
+
 ## Content of the repository
 - `src`: source code 
 - `external`: external libraries
@@ -33,6 +35,8 @@ cd build
 cmake --DCMAKE_BUILD_TYPE=Release ..
 cmake --build . --config Release
 ```
+
+Binaries will be available in the **${ROOT}/bin** folder
 
 ## Author & Copyright
 Daniela Cabiddu
