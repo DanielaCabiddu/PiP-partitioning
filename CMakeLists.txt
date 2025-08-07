@@ -28,6 +28,7 @@ if (USE_CINOLIB_GUI)
 endif()
 
 set (cinolib_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/cinolib)
+message (${cinolib_DIR})
 find_package(cinolib REQUIRED)
 link_libraries(cinolib)
 
@@ -63,18 +64,19 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${GDAL_LIB} ${libLAS_LIBRARY} cinolib OpenMP::OpenMP_CXX)
 
 if (MSVC)
-    file (GLOB MY_PROJ_DLLs ${PROJ_INSTALL}/bin/*.dll    )
-    file (GLOB MY_PROJ_DB ${PROJ_INSTALL}/share/proj/*.db    )
+    # Collect runtime files
+    file(GLOB MY_PROJ_DB     "${PROJ_INSTALL}/share/proj/*.db")
+    file(GLOB MY_PROJ_DLLs   "${PROJ_INSTALL}/bin/*.dll")
+    file(GLOB MY_GDAL_DLLs   "${GDAL_INSTALL}/bin/*.dll")
+    file(GLOB MY_SQLITE_DLLs "${SQLite3_INCLUDE_DIR}/../bin/*.dll")
 
-    file (GLOB MY_GDAL_DLLs ${GDAL_INSTALL}/bin/*.dll    )
-    file (GLOB MY_SQLITE_DLLs ${SQLite3_INCLUDE_DIR}/../bin/*.dll     )
-    # file (COPY ${MY_PROJ_DLLs} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-    file (COPY ${MY_PROJ_DB} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
-    # file (COPY ${MY_GDAL_DLLs} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-    # file (COPY ${MY_SQLITE_DLLs} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MY_PROJ_DB}     $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MY_PROJ_DLLs}   $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MY_GDAL_DLLs}   $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MY_SQLITE_DLLs} $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
 endif()
-
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}
