@@ -1,11 +1,19 @@
-# Define the URL and target paths
-$downloadUrl = "https://cnrsc-my.sharepoint.com/:u:/g/personal/daniela_cabiddu_cnr_it/EdinMfuDSExGqYzODGvayugBEzty5darzZK44fTuY6LUbw?e=azc8qC&download=1" 
+param (
+    [string]$exePath
+)
 
 # Get script directory
 $scriptDir = $PSScriptRoot
 
+# Define the URL and target paths
+$downloadUrl = "https://cnrsc-my.sharepoint.com/:u:/g/personal/daniela_cabiddu_cnr_it/EdinMfuDSExGqYzODGvayugBEzty5darzZK44fTuY6LUbw?e=azc8qC&download=1" 
+
+if (-not $exePath) {
+    # Default path if not passed in
+    $exePath = Join-Path $scriptDir "..\bin\PBF-FR-partitioning.exe"
+}
+
 $downloadPath = Join-Path $scriptDir "..\data\H3D\H3D.las"
-$exePath    = Join-Path $scriptDir "..\bin\PBF-FR-partitioning.exe"
 
 $ext_boundary = Join-Path $scriptDir "..\data\H3D\hess_boundary_25832.shp"
 $int_boundary = Join-Path $scriptDir "..\data\H3D\hess_25832.shp"
