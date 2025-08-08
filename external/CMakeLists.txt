@@ -77,59 +77,94 @@ endif()
 #####################################################################################################
 #proj
 
-set (PROJ_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/proj)
-set (PROJ_BUILD ${PROJ_DIR}/build-${CMAKE_SYSTEM_NAME})
-set (PROJ_INSTALL ${PROJ_DIR}/install-${CMAKE_SYSTEM_NAME})
+# set (PROJ_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/proj)
+# set (PROJ_BUILD ${PROJ_DIR}/build-${CMAKE_SYSTEM_NAME})
+# set (PROJ_INSTALL ${PROJ_DIR}/install-${CMAKE_SYSTEM_NAME})
 
-file(MAKE_DIRECTORY ${PROJ_BUILD})
-file(MAKE_DIRECTORY ${PROJ_INSTALL})
+# file(MAKE_DIRECTORY ${PROJ_BUILD})
+# file(MAKE_DIRECTORY ${PROJ_INSTALL})
 
-if(APPLE)
-    set (PROJ_LIB ${PROJ_INSTALL}/lib/libproj.25.dylib)
-elseif(UNIX)
-    set (PROJ_LIB ${PROJ_INSTALL}/lib/libproj.so)
-else()
-    set (PROJ_LIB ${PROJ_INSTALL}/lib/proj.lib)
-endif()
+# if(APPLE)
+#     set (PROJ_LIB ${PROJ_INSTALL}/lib/libproj.25.dylib)
+# elseif(UNIX)
+#     set (PROJ_LIB ${PROJ_INSTALL}/lib/libproj.so)
+# else()
+#     set (PROJ_LIB ${PROJ_INSTALL}/lib/proj.lib)
+# endif()
 
-set(PROJ_H ${PROJ_INSTALL}/include)
+# set(PROJ_H ${PROJ_INSTALL}/include)
 
 #####################################################################################################
 ##gdal
 
-set (GDAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/gdal)
-set (GDAL_BUILD ${GDAL_DIR}/build-${CMAKE_SYSTEM_NAME})
-set (GDAL_INSTALL ${GDAL_DIR}/install-${CMAKE_SYSTEM_NAME})
+# set (GDAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/gdal)
+# set (GDAL_BUILD ${GDAL_DIR}/build-${CMAKE_SYSTEM_NAME})
+# set (GDAL_INSTALL ${GDAL_DIR}/install-${CMAKE_SYSTEM_NAME})
 
-set (GDAL_LIB ${GDAL_INSTALL}/lib/libgdal.so)
+# set (GDAL_LIB ${GDAL_INSTALL}/lib/libgdal.so)
 
-file(MAKE_DIRECTORY ${GDAL_BUILD})
-file(MAKE_DIRECTORY ${GDAL_INSTALL})
+# file(MAKE_DIRECTORY ${GDAL_BUILD})
+# file(MAKE_DIRECTORY ${GDAL_INSTALL})
+
+# if (APPLE)
+#     set (GDAL_LIB ${GDAL_INSTALL}/lib/libgdal.dylib)
+# endif()
+
+# if (MSVC)
+
+#     set (GDAL_LIB ${GDAL_INSTALL}/lib/gdal.lib)
+
+#     add_custom_command(
+#             OUTPUT ${GDAL_LIB}
+#             COMMAND cmake -DEXE_SQLITE3=${SQLite3_BINARY} -DSQLITE3_INCLUDE_DIR=${SQLite3_INCLUDE_DIR} -DSQLITE3_LIBRARY=${SQLite3_LIBRARY} -DBUILD_APPS=OFF -DENABLE_CURL=OFF -DENABLE_TIFF=OFF -DCMAKE_INSTALL_PREFIX=${PROJ_INSTALL} .. && cmake --build . --config Release && cmake --install . && cd ${GDAL_BUILD} && cmake .. -DCMAKE_INSTALL_PREFIX=${GDAL_INSTALL} -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF -DOGR_BUILD_OPTIONAL_DRIVERS=OFF -DPROJ_INCLUDE_DIR=${PROJ_INSTALL}/include -DPROJ_LIBRARY_RELEASE=${PROJ_LIB} -DBUILD_PYTHON_BINDINGS=OFF && cmake --build . --config Release --parallel 16 && cmake --install .
+#             DEPENDS ${GDAL_INSTALL}/bin/gdal.exe
+#             WORKING_DIRECTORY ${PROJ_BUILD}
+#     )
+# else()
+#     add_custom_command(
+#             OUTPUT ${GDAL_LIB}
+#             COMMAND cmake -DBUILD_APPS=OFF -DENABLE_CURL=OFF -DENABLE_TIFF=OFF -DCMAKE_INSTALL_PREFIX=${PROJ_INSTALL} .. && cmake --build . --parallel 16 && cmake --install . && cd ${GDAL_BUILD} && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GDAL_INSTALL} -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF -DOGR_BUILD_OPTIONAL_DRIVERS=OFF -DPROJ_INCLUDE_DIR=${PROJ_INSTALL}/include -DPROJ_LIBRARY_RELEASE=${PROJ_LIB} -DBUILD_PYTHON_BINDINGS=OFF && cmake --build . --parallel 16 && cmake --install .
+#             #DEPENDS ${GDAL_INSTALL}/bin/gdal
+#             WORKING_DIRECTORY ${PROJ_BUILD}
+#     )
+# endif()
+
+# include_directories(${GDAL_INSTALL}/include)
+
+#####################################################################################################
+##shapelib
+
+set (SHP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/shapelib)
+set (SHP_BUILD ${SHP_DIR}/build-${CMAKE_SYSTEM_NAME})
+set (SHP_INSTALL ${SHP_DIR}/install-${CMAKE_SYSTEM_NAME})
+
+set (SHP_LIB ${SHP_INSTALL}/lib/libshp.so)
+
+file(MAKE_DIRECTORY ${SHP_BUILD})
+file(MAKE_DIRECTORY ${SHP_INSTALL})
 
 if (APPLE)
-    set (GDAL_LIB ${GDAL_INSTALL}/lib/libgdal.dylib)
+    set (SHP_LIB ${SHP_INSTALL}/lib/libshp.dylib)
 endif()
 
 if (MSVC)
 
-    set (GDAL_LIB ${GDAL_INSTALL}/lib/gdal.lib)
+    set (SHP_LIB ${SHP_INSTALL}/lib/shp.lib)
 
     add_custom_command(
-            OUTPUT ${GDAL_LIB}
-            COMMAND cmake -DEXE_SQLITE3=${SQLite3_BINARY} -DSQLITE3_INCLUDE_DIR=${SQLite3_INCLUDE_DIR} -DSQLITE3_LIBRARY=${SQLite3_LIBRARY} -DBUILD_APPS=OFF -DENABLE_CURL=OFF -DENABLE_TIFF=OFF -DCMAKE_INSTALL_PREFIX=${PROJ_INSTALL} .. && cmake --build . --config Release && cmake --install . && cd ${GDAL_BUILD} && cmake .. -DCMAKE_INSTALL_PREFIX=${GDAL_INSTALL} -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF -DOGR_BUILD_OPTIONAL_DRIVERS=OFF -DPROJ_INCLUDE_DIR=${PROJ_INSTALL}/include -DPROJ_LIBRARY_RELEASE=${PROJ_LIB} -DBUILD_PYTHON_BINDINGS=OFF && cmake --build . --config Release --parallel 16 && cmake --install .
-            DEPENDS ${GDAL_INSTALL}/bin/gdal.exe
-            WORKING_DIRECTORY ${PROJ_BUILD}
+            OUTPUT ${SHP_LIB}
+            COMMAND cmake .. && cmake --build . --config Release --parallel 16 ###&& cmake --install .
+            WORKING_DIRECTORY ${SHP_BUILD}
     )
 else()
     add_custom_command(
-            OUTPUT ${GDAL_LIB}
-            COMMAND cmake -DBUILD_APPS=OFF -DENABLE_CURL=OFF -DENABLE_TIFF=OFF -DCMAKE_INSTALL_PREFIX=${PROJ_INSTALL} .. && cmake --build . --parallel 16 && cmake --install . && cd ${GDAL_BUILD} && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${GDAL_INSTALL} -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF -DOGR_BUILD_OPTIONAL_DRIVERS=OFF -DPROJ_INCLUDE_DIR=${PROJ_INSTALL}/include -DPROJ_LIBRARY_RELEASE=${PROJ_LIB} -DBUILD_PYTHON_BINDINGS=OFF && cmake --build . --parallel 16 && cmake --install .
-            #DEPENDS ${GDAL_INSTALL}/bin/gdal
-            WORKING_DIRECTORY ${PROJ_BUILD}
+        OUTPUT ${SHP_LIB}
+        COMMAND cmake ..-DCMAKE_BUILD_TYPE=Release && cmake --build . --parallel 16 ##&& cmake --install .
+        WORKING_DIRECTORY ${SHP_BUILD}
     )
 endif()
 
-include_directories(${GDAL_INSTALL}/include)
+include_directories(${SHP_DIR})
 
 #####################################################################################################
 ##liblas
@@ -189,4 +224,4 @@ if (MSVC)
     file (COPY ${MY_LIBZIP_DLLs} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 endif()
 
-add_custom_target(UrbanServices-Dependences ALL DEPENDS ${GDAL_LIB} ${LIBLAS_LIB} ${LIBZIP_LIB} )
+add_custom_target(UrbanServices-Dependences ALL DEPENDS ${LIBLAS_LIB} ${LIBZIP_LIB} ${SHP_LIB})

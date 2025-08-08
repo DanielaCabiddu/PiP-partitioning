@@ -16,8 +16,6 @@ set (CINOLIB_USES_TRIANGLE    ON)
 make_directory(${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
-# include_directories(${urban_INCLUDE_DIR})
-
 #########################################################
 
 ##Cinolib
@@ -52,6 +50,12 @@ include_directories(${tclap_DIR}/include)
 
 #########################################################
 
+## SHAPELIB
+set (SHP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/shapelib)
+include_directories(${SHP_DIR}/include)
+
+#########################################################
+
 ## LIBLAS
 include_directories(${libLAS_INCLUDE_DIR})
 
@@ -61,7 +65,7 @@ message(STATUS "Using LIBLAS: ${libLAS_INCLUDE_DIR}")
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJ_LIB} ${GDAL_LIB} ${libLAS_LIBRARY} cinolib OpenMP::OpenMP_CXX)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${libLAS_LIBRARY} cinolib OpenMP::OpenMP_CXX)
 
 if (MSVC)
     # Collect runtime files
