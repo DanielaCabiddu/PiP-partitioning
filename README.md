@@ -1,6 +1,6 @@
 # PiP-partitioning
 
-PiP-partitioning is a C++ tool for efficiently partitioning large LiDAR datasets in LAS format using polygonal boundaries, such as building footprints or administrative areas.
+PiP-partitioning is a C++ tool for efficiently partitioning point clouds using polygonal boundaries.
 It is especially suited for workflows where point clouds must be split into manageable subsets while preserving geometric accuracy and processing speed.
 
 The core of PiP-partitioning is a point-in-polygon test based on the Jordan Curve Theorem. According to the theorem, a point lies inside a polygon if a semi-infinite ray cast from the point intersects the polygon boundary an odd number of times. We extend the classic W. Randolph Franklin algorithm to support complex polygonal geometries, including those with holes (e.g., internal courtyards), which are common in building footprints.
