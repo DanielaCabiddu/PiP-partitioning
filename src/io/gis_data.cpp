@@ -348,7 +348,7 @@ GDALDataset * GISData::read(const std::string filename, unsigned int nOpenFlags)
                 //     polygon.push_back(point);
                 // }
 
-                add_polygon(polygon);
+                //add_polygon(polygon);
 
                 // Read and store data fields
                 std::vector<GISDataField> fields;
@@ -505,37 +505,37 @@ cinolib::Polygonmesh<> GISData::convert_to_polygon_mesh () const
     {
         std::vector<unsigned int> vert_ids;
 
-        cinolib::Polygonmesh<> tmp;
+        // cinolib::Polygonmesh<> tmp;
 
         if(!polygons.empty())
         for (uint pp=0; pp < polygons.at(p).size()-1; pp++)
         {
-            unsigned int id = tmp.vert_add(polygons.at(p).at(pp));
+            unsigned int id = mesh.vert_add(polygons.at(p).at(pp));
             vert_ids.push_back(id);
         }
 
-        tmp.poly_add(vert_ids);
+        mesh.poly_add(vert_ids);
 
-        cinolib::merge_meshes_at_coincident_vertices(mesh, tmp, mesh);
+        //cinolib::merge_meshes_at_coincident_vertices(mesh, tmp, mesh);
     }
 
-    if (!lines.empty())
-    for (uint l=0; l < lines.size(); l++)
-    {
-        std::vector<unsigned int> vert_ids;
+    // if (!lines.empty())
+    // for (uint l=0; l < lines.size(); l++)
+    // {
+    //     std::vector<unsigned int> vert_ids;
 
-        cinolib::Polygonmesh<> tmp;
+    //     cinolib::Polygonmesh<> tmp;
 
-        for (uint p=0; p < lines.at(l).size()-1; p++)
-        {
-            unsigned int id = tmp.vert_add(lines.at(l).at(p));
-            vert_ids.push_back(id);
-        }
+    //     for (uint p=0; p < lines.at(l).size()-1; p++)
+    //     {
+    //         unsigned int id = tmp.vert_add(lines.at(l).at(p));
+    //         vert_ids.push_back(id);
+    //     }
 
-        tmp.poly_add(vert_ids);
+    //     tmp.poly_add(vert_ids);
 
-        cinolib::merge_meshes_at_coincident_vertices(mesh, tmp, mesh);
-    }
+    //     cinolib::merge_meshes_at_coincident_vertices(mesh, tmp, mesh);
+    // }
 
     return mesh;
 }

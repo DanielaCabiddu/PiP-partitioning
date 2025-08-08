@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(PBF-FR-partitioning LANGUAGES CXX)
+project(PiP-partitioning LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -61,7 +61,7 @@ message(STATUS "Using LIBLAS: ${libLAS_INCLUDE_DIR}")
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${GDAL_LIB} ${libLAS_LIBRARY} cinolib OpenMP::OpenMP_CXX)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJ_LIB} ${GDAL_LIB} ${libLAS_LIBRARY} cinolib OpenMP::OpenMP_CXX)
 
 if (MSVC)
     # Collect runtime files
