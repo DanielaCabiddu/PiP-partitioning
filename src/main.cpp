@@ -93,11 +93,14 @@ int main(int argc, char *argv[])
     if ((nShapeType != SHPT_POLYGONZ) && (nShapeType != SHPT_POLYGON))
     {
         // Wrong type: must be polygons
+        std::cerr << "Unsupported polygon type." << std::endl;
+        exit(1);
+    }
 
     //std::cout << "ShapeType " << nShapeType << std::endl;
 
     regions = new SHPObject * [nRegions];
-    reg_points = new list<int> [nRegions];
+    reg_points = new std::list<int> [nRegions];
 
     // Check if the LAS file exists
     std::ifstream ifs;

@@ -65,7 +65,7 @@ message(STATUS "Using LIBLAS: ${libLAS_INCLUDE_DIR}")
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${libLAS_LIBRARY} cinolib OpenMP::OpenMP_CXX)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${libLAS_LIBRARY} ${SHP_LIB} cinolib OpenMP::OpenMP_CXX)
 
 if (MSVC)
     # Collect runtime files

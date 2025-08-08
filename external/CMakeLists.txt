@@ -138,7 +138,7 @@ set (SHP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/shapelib)
 set (SHP_BUILD ${SHP_DIR}/build-${CMAKE_SYSTEM_NAME})
 set (SHP_INSTALL ${SHP_DIR}/install-${CMAKE_SYSTEM_NAME})
 
-set (SHP_LIB ${SHP_INSTALL}/lib/libshp.so)
+set (SHP_LIB ${SHP_BUILD}/libshp.so)
 
 file(MAKE_DIRECTORY ${SHP_BUILD})
 file(MAKE_DIRECTORY ${SHP_INSTALL})
@@ -159,10 +159,12 @@ if (MSVC)
 else()
     add_custom_command(
         OUTPUT ${SHP_LIB}
-        COMMAND cmake ..-DCMAKE_BUILD_TYPE=Release && cmake --build . --parallel 16 ##&& cmake --install .
+        COMMAND cmake .. -DCMAKE_BUILD_TYPE=Release && cmake --build . --parallel 16 ##&& cmake --install .
         WORKING_DIRECTORY ${SHP_BUILD}
     )
 endif()
+
+message (${SHP_LIB})
 
 include_directories(${SHP_DIR})
 
