@@ -13,7 +13,6 @@ In the following, assume the **${ROOT}** folder to be the one whee this *README*
 ## Content of the repository
 - `src`: source code 
 - `external`: external libraries
-- `scripts`: scripts necessary to replicate experiments described in the paper
 - `CMakeLists.txt`: build configuration file
 
 
