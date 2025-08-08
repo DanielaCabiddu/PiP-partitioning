@@ -11,7 +11,7 @@
  ********************************************************************************/
 
 #include "meshing/auxiliary.h"
-#include "io/read_GIS.h"
+#include <shapefil.h>
 
 // #include "urban3D/utils/point_in_polygon.h"
 
@@ -65,19 +65,39 @@ int main(int argc, char *argv[])
         exit(-3);
     }
 
-    // if (!fs::exists(pavements_path)) {
-    //     std::cerr << "the buildings folder does not exist" << std::endl;
-    //     assert(false);
-    // }
-
     cinolib::Polygonmesh<> polys_mesh;
 
-    GISData gis_data;
-    Urban3D::IO::read_GIS(polys_path, gis_data);
-    boundary_epsg = gis_data.get_epsg();
+    // Read the polygons from the shapefile
+    SHPHandle hSHP;
+    // DBFHandle hDBF;
 
-    polys_mesh = gis_data.convert_to_polygon_mesh();
+    // opening the input files
+    hSHP = SHPOpen(polys_path.c_str(), "rb");
+    // hDBF = DBFOpen(bound_name.c_str(), "rb");
 
+    int nShapeType, nRegions, nPoints, CodId, DescId;
+    double adfBndsMin[4], adfBndsMax[4];
+
+    SHPObject ** regions;
+    std::list<int> * reg_points;
+    std::list<int> out_Points;
+
+    for (int i = 0; i < nRegions; ++i)
+    {
+        regions[i] = SHPReadObject(hSHP, i);
+    }
+
+
+    SHPGetInfo(hSHP, &nRegions, &nShapeType, adfBndsMin, adfBndsMax);
+
+    if ((nShapeType != SHPT_POLYGONZ) && (nShapeType != SHPT_POLYGON))
+    {
+        // Wrong type: must be polygons
+
+    //std::cout << "ShapeType " << nShapeType << std::endl;
+
+    regions = new SHPObject * [nRegions];
+    reg_points = new list<int> [nRegions];
 
     // Check if the LAS file exists
     std::ifstream ifs;
@@ -108,7 +128,6 @@ int main(int argc, char *argv[])
 
         std::atomic<int> lastPercentagePrinted{0};
 
-
         #pragma omp parallel for ordered schedule(static,1)
         for (int j = 0; j < nPoints; j++)
         {
@@ -127,7 +146,7 @@ int main(int argc, char *argv[])
 
             for (uint pid=0; pid < polys_mesh.num_polys(); pid++)
             {
-                if (point_in_polygon(polys_mesh, cinolib::vec3d(Points.at(j).GetX(), Points.at(j).GetY(),Points.at(j).GetZ()), pid))
+                if (pnpoly(regions[pid], Points[j].GetX(), Points[j].GetY()))
                 {
                     // region2point.at(pid).push_back(j);
                     point2region.at(j) = pid;
@@ -186,6 +205,12 @@ int main(int argc, char *argv[])
             if (!fs::exists(outFolder))
             {
                 fs::create_directories(outFolder);
+            }
+
+            if (!fs::exists(outFolder))
+            {
+                std::cerr << "Error creating output directory: " << outFolder << std::endl;
+                continue;
             }
 
             std::cout << "Writing LAS file: " << outName << std::endl;

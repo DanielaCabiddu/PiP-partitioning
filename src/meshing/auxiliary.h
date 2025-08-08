@@ -2,46 +2,40 @@
 #define CITY_AUXILIARY
 
 #include <cinolib/meshes/meshes.h>
-
+#include <shapefil.h>
 
 inline
-bool point_in_polygon(const cinolib::Polygonmesh<> &m, const cinolib::vec3d p, const uint pid)
+int pnpoly(SHPObject * region, double testx, double testy)
 {
-    int i, j, c = 0;
+    int nvert = region->nVertices;
+    double *vertx = region->padfX;
+    double *verty = region->padfY;
 
-    int nvert = m.poly_verts(pid).size();
-
-    double minx = DBL_MAX;
-    double miny = DBL_MAX;
-    double maxx = -DBL_MAX;
-    double maxy = -DBL_MAX;
-
-    for (unsigned int vid : m.poly_verts_id(pid))
+    if (region->nParts > 1)
     {
-        cinolib::vec3d v = m.vert(vid);
-        if (v.x() < minx) minx = v.x();
-        if (v.y() < miny) miny = v.y();
-        if (v.x() > maxx) maxx = v.x();
-        if (v.y() > maxy) maxy = v.y();
+        nvert = region->panPartStart[1];
     }
+
+    int i, j, c = 0;
 
     for (i = 0, j = nvert - 1; i < nvert; j = i++) {
 
         bool bbout = false;
 
-        // Check if the point is outside the bounding box of the polygon
-        if (p.x() < minx || p.y() < miny ||
-            p.x() > maxx || p.y() > maxy )
+        if (testx < region->dfXMin || testy < region->dfYMin ||
+            testx > region->dfXMax || testy > region->dfYMax )
             bbout = true;
 
-        // Check if the point is inside the polygon using the ray-casting algorithm
-        if (!bbout && ((m.poly_vert(pid,i).y() > p.y()) != (m.poly_vert(pid,j).y() > p.y())) &&
-            (p.x() < (m.poly_vert(pid,j).x() - m.poly_vert(pid,i).x()) * (p.y() - m.poly_vert(pid,i).y()) / (m.poly_vert(pid,j).y() - m.poly_vert(pid,i).y()) + m.poly_vert(pid,i).x()))
+        if (!bbout && ((verty[i] > testy) != (verty[j] > testy)) &&
+            (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
             c = !c;
     }
 
-    return c;//!(c == 0);
-
+#ifdef _DEEPTIMING_
+    pnp_time += hmt_get (&pnp);
+#endif
+    return c;
 }
+
 
 #endif // CITY_AUXILIARY
