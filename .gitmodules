@@ -13,3 +13,6 @@
 [submodule "external/libLAS"]
 	path = external/libLAS
 	url = https://github.com/libLAS/libLAS.git
+[submodule "external/shapelib"]
+	path = external/shapelib
+	url = https://github.com/OSGeo/shapelib.git
