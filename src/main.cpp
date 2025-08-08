@@ -65,8 +65,6 @@ int main(int argc, char *argv[])
         exit(-3);
     }
 
-    cinolib::Polygonmesh<> polys_mesh;
-
     // Read the polygons from the shapefile
     SHPHandle hSHP;
     // DBFHandle hDBF;
@@ -82,13 +80,9 @@ int main(int argc, char *argv[])
     std::list<int> * reg_points;
     std::list<int> out_Points;
 
-    for (int i = 0; i < nRegions; ++i)
-    {
-        regions[i] = SHPReadObject(hSHP, i);
-    }
-
-
     SHPGetInfo(hSHP, &nRegions, &nShapeType, adfBndsMin, adfBndsMax);
+
+    std::cout << "n regions: " << nRegions << std::endl;
 
     if ((nShapeType != SHPT_POLYGONZ) && (nShapeType != SHPT_POLYGON))
     {
@@ -101,6 +95,11 @@ int main(int argc, char *argv[])
 
     regions = new SHPObject * [nRegions];
     reg_points = new std::list<int> [nRegions];
+
+     for (int i = 0; i < nRegions; ++i)
+    {
+        regions[i] = SHPReadObject(hSHP, i);
+    }
 
     // Check if the LAS file exists
     std::ifstream ifs;
@@ -120,7 +119,7 @@ int main(int argc, char *argv[])
         std::vector<liblas::Point> Points;
         std::vector<uint> point2region (nPoints, UINT_MAX);
 
-        std::vector<std::vector<uint>> region2point (polys_mesh.num_polys(), std::vector<uint>());
+        std::vector<std::vector<uint>> region2point (nRegions, std::vector<uint>());
         Points.reserve(nPoints);
 
         while (reader.ReadNextPoint())
@@ -145,9 +144,7 @@ int main(int argc, char *argv[])
             //           << Points.at(j).GetY() << ", "
             //           << Points.at(j).GetZ() << std::endl;
 
-
-
-            for (uint pid=0; pid < polys_mesh.num_polys(); pid++)
+            for (uint pid=0; pid < nRegions; pid++)
             {
                 if (pnpoly(regions[pid], Points[j].GetX(), Points[j].GetY()))
                 {
@@ -191,7 +188,7 @@ int main(int argc, char *argv[])
         }
 
         ///
-        for (uint pid=0; pid < polys_mesh.num_polys(); pid++)
+        for (uint pid=0; pid < nRegions; pid++)
         {
             if (region2point.at(pid).size() == 0)
             {
