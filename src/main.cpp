@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 
             std::ofstream outFile;
 
-            std::string outFolder = output_las_folder + "/" + std::to_string(pid);
+            std::string outFolder = output_las_folder + "/building" + std::to_string(pid);
             std::string outName = outFolder + "/" + std::to_string(pid) + ".las";
 
             // create output directory if it does not exist
